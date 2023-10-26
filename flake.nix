@@ -26,7 +26,7 @@
         };
       }) // {
         overlays.default = final: prev: {
-          haskellPackages = prev.haskellPackages.override (old: {
+          haskellPackages = prev.haskell.packages.ghc96.override (old: {
             overrides =
               final.lib.composeExtensions (old.overrides or (_: _: { }))
               (hfinal: hprev: {
