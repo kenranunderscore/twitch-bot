@@ -15,7 +15,7 @@
         };
       in {
         devShells.default = pkgs.haskellPackages.shellFor {
-          packages = p: [ p.Ryu ];
+          packages = p: [ p.kenranbot ];
           nativeBuildInputs = [
             pkgs.cabal-install
             pkgs.haskellPackages.cabal-fmt
@@ -30,7 +30,8 @@
             overrides =
               final.lib.composeExtensions (old.overrides or (_: _: { }))
               (hfinal: hprev: {
-                Ryu = hfinal.callCabal2nix "Ryu" (final.lib.cleanSource ./.) { };
+                kenranbot = hfinal.callCabal2nix "kenranbot"
+                  (final.lib.cleanSource ./haskell) { };
               });
           });
         };

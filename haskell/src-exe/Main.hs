@@ -30,4 +30,3 @@ login conn = do
     pw <- Text.readFile "token"
     WS.sendTextData conn $ "PASS oauth:" <> pw
     WS.sendTextData @Text conn "NICK kenranbot"
-    putStrLn "logged in!"
