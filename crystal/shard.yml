@@ -1,0 +1,13 @@
+name: kenranbot
+version: 0.1.0
+
+authors:
+  - Johannes Maier <johannes.maier@mailbox.org>
+
+targets:
+  kenranbot:
+    main: src/kenranbot.cr
+
+crystal: 1.9.2
+
+license: MIT

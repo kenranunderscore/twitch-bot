@@ -17,11 +17,19 @@
         devShells.default = pkgs.haskellPackages.shellFor {
           packages = p: [ p.kenranbot ];
           nativeBuildInputs = [
+            # Nix
+            pkgs.nixfmt
+
+            # Haskell
             pkgs.cabal-install
             pkgs.haskellPackages.cabal-fmt
             pkgs.haskellPackages.fourmolu
             pkgs.haskellPackages.haskell-language-server
-            pkgs.nixfmt
+
+            # Crystal
+            pkgs.crystal
+            pkgs.crystalline
+            pkgs.shards
           ];
         };
       }) // {
