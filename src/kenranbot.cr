@@ -1,19 +1,28 @@
 require "http/web_socket"
 
-module Kenranbot
-  VERSION = "0.1.0"
+def handle_ping(msg)
+  puts "PING received:"
+  puts msg
+end
 
-  ws = HTTP::WebSocket.new("ws://irc-ws.chat.twitch.tv:80")
-  ws.on_ping do |msg|
-    puts "  PING received"
-    puts msg
+def handle_message(msg)
+  puts "message received:"
+  puts msg
+end
+
+class Bot
+  def initialize
+    @sock = HTTP::WebSocket.new("ws://irc-ws.chat.twitch.tv:80")
+    # TODO: inject a token manager or sth like that to handle refreshes
+    token = File.read "token"
+    @sock.on_ping { |msg| handle_ping msg }
+    @sock.on_message { |msg| handle_message msg }
+    @sock.send "PASS oauth:#{token}"
+    @sock.send "NICK kenranbot"
+    @sock.send "JOIN #kenran__"
   end
-  ws.on_message do |msg|
-    puts msg
+
+  def run
+    @sock.run
   end
-  token = File.read "token"
-  ws.send "PASS oauth:#{token}"
-  ws.send "NICK kenranbot"
-  ws.send "JOIN #kenran__"
-  ws.run
 end

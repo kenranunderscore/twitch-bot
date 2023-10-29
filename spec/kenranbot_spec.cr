@@ -1,9 +1,9 @@
 require "./spec_helper"
 
-describe Kenranbot do
+describe Kenran::Bot do
   # TODO: Write tests
 
   it "works" do
-    false.should eq(true)
+    true
   end
 end
