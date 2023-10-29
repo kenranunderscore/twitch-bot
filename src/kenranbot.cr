@@ -9,10 +9,9 @@ module Kenranbot
     puts msg
   end
   ws.on_message do |msg|
-    parts = msg.split("PRIVMSG #kenran__ :", remove_empty: true)
-    ws.send "PRIVMSG #kenran__ :#{parts[-1]}"
+    puts msg
   end
-  token = File.read "../token"
+  token = File.read "token"
   ws.send "PASS oauth:#{token}"
   ws.send "NICK kenranbot"
   ws.send "JOIN #kenran__"

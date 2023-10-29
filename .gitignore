@@ -1,1 +1,10 @@
+# Crystal stuff
+/docs/
+/lib/
+/bin/
+/.shards/
+*.dwarf
+
+# Project-specific
 /token
+/refresh_token
