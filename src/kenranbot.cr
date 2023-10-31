@@ -53,7 +53,7 @@ end
 
 class Bot
   def initialize
-    @sock = HTTP::WebSocket.new("ws://irc-ws.chat.twitch.tv:80")
+    @sock = HTTP::WebSocket.new("wss://irc-ws.chat.twitch.tv:443")
     # TODO: inject a token manager or sth like that to handle refreshes
     token = File.read "token"
     @sock.on_ping { |msg| handle_ping msg }
