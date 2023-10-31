@@ -1,3 +1,3 @@
-require "./kenranbot"
+require "./kenran/bot"
 
-Bot.new.run
+Kenran::Bot.new.run

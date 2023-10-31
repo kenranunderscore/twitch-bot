@@ -51,7 +51,7 @@ def parse_message(msg)
   end
 end
 
-class Bot
+class Kenran::Bot
   def initialize
     @sock = HTTP::WebSocket.new("wss://irc-ws.chat.twitch.tv:443")
     # TODO: inject a token manager or sth like that to handle refreshes
@@ -61,6 +61,7 @@ class Bot
     @sock.send "PASS oauth:#{token}"
     @sock.send "NICK kenranbot"
     @sock.send "JOIN #kenran__"
+    @sock.send "PRIVMSG #kenran__ :I have joined the chat!"
   end
 
   def run
