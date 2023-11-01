@@ -21,6 +21,15 @@ module Kenran::Parser
     end
   end
 
+  def self.parse_raw_command(msg)
+    command_end = msg.index(":")
+    if command_end
+      {raw_command: msg[0...command_end].strip, remaining: msg[command_end + 1..]}
+    else
+      {raw_command: msg[0..].strip, remaining: nil}
+    end
+  end
+
   def self.parse_message(msg)
     if msg[0] == '@'
       puts "cannot handle tags yet, dying"
@@ -31,11 +40,11 @@ module Kenran::Parser
     puts "parsed source: " + source_res.to_s
     rem = source_res[:remaining]
 
-    command_end = rem.index(":")
-    if command_end
-      command = rem[0...command_end]
-      puts "command: " + command
-      puts "parameters: " + rem[command_end + 1..]
+    command_res = parse_raw_command rem
+    puts "raw command: " + command_res[:raw_command]
+    raw_parameters = command_res[:remaining]
+    if raw_parameters
+      puts "parameters: " + raw_parameters[0..]
     end
   end
 end

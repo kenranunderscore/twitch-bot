@@ -17,4 +17,19 @@ describe Kenran::Parser do
       message_source[:source].should eq expected
     end
   end
+
+  describe "parsing the command" do
+    it "works for user messages" do
+      msg = "PRIVMSG #kenran__ :blub"
+      result = Kenran::Parser.parse_raw_command msg
+      expected = "PRIVMSG #kenran__"
+      result[:raw_command].should eq expected
+    end
+    it "works for commands without parameters" do
+      msg = "JOIN #kenran__"
+      result = Kenran::Parser.parse_raw_command msg
+      expected = "JOIN #kenran__"
+      result[:raw_command].should eq expected
+    end
+  end
 end
