@@ -38,17 +38,29 @@ module Kenran::Parser
     end
   end
 
-  def self.parse_message(msg)
-    if msg[0] == '@'
-      puts "cannot handle tags yet, dying"
-      return
+  def self.parse_tags(msg)
+    if msg[0] != '@'
+      return succeed(nil, msg)
     end
 
-    source_res = parse_message_source msg
-    puts "parsed source: " + source_res.to_s
-    rem = source_res.remaining_input
+    # if the message contains tags, this has to exist
+    next_space = msg.index(" ", 1).as(Int32)
+    all_pairs = msg[1...next_space].split(";")
+    return succeed(all_pairs, msg[next_space + 1..])
+  end
 
-    command_res = parse_raw_command rem
+  def self.parse_message(msg)
+    tags_res = parse_tags msg
+    if tags_res.result
+      puts "parsed tags: " + tags_res.to_s
+    end
+
+    source_res = parse_message_source tags_res.remaining_input
+    if source_res.result
+      puts "parsed source: " + source_res.to_s
+    end
+
+    command_res = parse_raw_command source_res.remaining_input
     puts "parsed command: " + command_res.to_s
     raw_parameters = command_res.remaining_input
     if raw_parameters

@@ -3,6 +3,15 @@ require "spec"
 require "../../src/kenran/parser"
 
 describe Kenran::Parser do
+  describe "trying to parse the tags" do
+    it "succeeds if no tags can be found" do
+      msg = "@badge-info=;badges=broadcaster/1 :abc!abc@abc.tmi.twitch.tv PRIVMSG #xyz :HeyGuys"
+      res = Kenran::Parser.parse_tags msg
+      expected_tags = ["badge-info=", "badges=broadcaster/1"]
+      res.result.should eq expected_tags
+    end
+  end
+
   describe "parsing the message source" do
     it "works for user messages" do
       msg = ":kenran__!kenran__@kenran__.tmi.twitch.tv PRIVMSG #kenran__ :blub"
