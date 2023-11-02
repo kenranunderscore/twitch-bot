@@ -1,7 +1,13 @@
 module Kenran::Parser
   record MessageSource, nickname : String | Nil, host : String
+  record Success(T), result : T, remaining_input : String
+
+  def self.succeed(result, remaining_input)
+    Success.new(result, remaining_input)
+  end
 
   def self.parse_message_source(msg)
+    remaining = msg
     if msg[0] == ':'
       next_space = msg.index(" ", 1)
       if next_space
@@ -12,21 +18,18 @@ module Kenran::Parser
         else
           source = MessageSource.new(nil, parts[0])
         end
-        {source: source, remaining: msg[next_space + 1..]}
-      else
-        {source: nil, remaining: msg}
+        remaining = msg[next_space + 1..]
       end
-    else
-      {source: nil, remaining: msg}
     end
+    succeed(source, remaining)
   end
 
   def self.parse_raw_command(msg)
     command_end = msg.index(":")
     if command_end
-      {raw_command: msg[0...command_end].strip, remaining: msg[command_end + 1..]}
+      succeed(msg[0...command_end].strip, msg[command_end + 1..])
     else
-      {raw_command: msg[0..].strip, remaining: nil}
+      succeed(msg[0..].strip, "")
     end
   end
 
@@ -38,11 +41,11 @@ module Kenran::Parser
 
     source_res = parse_message_source msg
     puts "parsed source: " + source_res.to_s
-    rem = source_res[:remaining]
+    rem = source_res.remaining_input
 
     command_res = parse_raw_command rem
-    puts "raw command: " + command_res[:raw_command]
-    raw_parameters = command_res[:remaining]
+    puts "parsed command: " + command_res.to_s
+    raw_parameters = command_res.remaining_input
     if raw_parameters
       puts "parameters: " + raw_parameters[0..]
     end
