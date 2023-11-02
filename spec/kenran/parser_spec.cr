@@ -7,13 +7,13 @@ describe Kenran::Parser do
     it "works for user messages" do
       msg = ":kenran__!kenran__@kenran__.tmi.twitch.tv PRIVMSG #kenran__ :blub"
       res = Kenran::Parser.parse_message_source msg
-      expected_source = Kenran::Parser::MessageSource.new("kenran__", "kenran__@kenran__.tmi.twitch.tv")
+      expected_source = Kenran::Parser::User.new("kenran__", "kenran__@kenran__.tmi.twitch.tv")
       res.result.should eq expected_source
     end
     it "works for server messages" do
       msg = ":kenranbot.tmi.twitch.tv 366 kenranbot #kenran__ :End of /NAMES list"
       res = Kenran::Parser.parse_message_source msg
-      expected = Kenran::Parser::MessageSource.new(nil, "kenranbot.tmi.twitch.tv")
+      expected = Kenran::Parser::Server.new("kenranbot.tmi.twitch.tv")
       res.result.should eq expected
     end
   end

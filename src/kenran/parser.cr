@@ -1,5 +1,10 @@
 module Kenran::Parser
-  record MessageSource, nickname : String | Nil, host : String
+  record Server, host : String
+
+  record User, nickname : String, host : String
+
+  alias MessageSource = Server | User
+
   record Success(T), result : T, remaining_input : String
 
   def self.succeed(result, remaining_input)
@@ -14,9 +19,9 @@ module Kenran::Parser
         raw_message_source = msg[1...next_space]
         parts = raw_message_source.split("!")
         if parts.size == 2
-          source = MessageSource.new(parts[0], parts[1])
+          source = User.new(parts[0], parts[1])
         else
-          source = MessageSource.new(nil, parts[0])
+          source = Server.new(parts[0])
         end
         remaining = msg[next_space + 1..]
       end
