@@ -1,6 +1,7 @@
 require "spec"
 
 require "../../src/kenran/parser"
+require "../../src/kenran/irc_command"
 
 describe Kenran::Parser do
   describe "trying to parse the tags" do
@@ -30,15 +31,31 @@ describe Kenran::Parser do
   describe "parsing the raw command" do
     it "works for user messages" do
       msg = "PRIVMSG #kenran__ :blub"
-      res = Kenran::Parser.parse_raw_command msg
+      res = Kenran::Parser.parse_raw_irc_command msg
       expected = "PRIVMSG #kenran__"
       res.result.should eq expected
+      res.remaining_input.should eq "blub"
     end
     it "works for commands without parameters" do
       msg = "JOIN #kenran__"
-      res = Kenran::Parser.parse_raw_command msg
+      res = Kenran::Parser.parse_raw_irc_command msg
       expected = "JOIN #kenran__"
       res.result.should eq expected
+    end
+  end
+
+  describe "parsing the IRC command" do
+    describe "works for PRIVMSG" do
+      it "with message text" do
+        raw_cmd = Kenran::Parser::Success.new("PRIVMSG #kenran__", ":blub")
+        res = Kenran::Parser.parse_irc_command raw_cmd
+        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__")
+      end
+      it "without message text" do
+        raw_cmd = Kenran::Parser::Success.new("PRIVMSG #kenran__", "")
+        res = Kenran::Parser.parse_irc_command raw_cmd
+        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__")
+      end
     end
   end
 end
