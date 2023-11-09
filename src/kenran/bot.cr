@@ -23,7 +23,7 @@ class Kenran::Bot
     @sock.send "PASS oauth:#{token}"
     @sock.send "NICK kenranbot"
     @sock.send "JOIN #kenran__"
-    @sock.send "PRIVMSG #kenran__ :I have joined the chat!"
+    @sock.send "CAP REQ :twitch.tv/commands twitch.tv/tags"
   end
 
   def run
