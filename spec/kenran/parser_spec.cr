@@ -47,14 +47,14 @@ describe Kenran::Parser do
   describe "parsing the IRC command" do
     describe "works for PRIVMSG" do
       it "with message text" do
-        raw_cmd = Kenran::Parser::Success.new("PRIVMSG #kenran__", ":blub")
-        res = Kenran::Parser.parse_irc_command raw_cmd
-        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__")
+        msg = "PRIVMSG #kenran__ :blub"
+        res = Kenran::Parser.parse_irc_command msg
+        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__", "blub")
       end
       it "without message text" do
-        raw_cmd = Kenran::Parser::Success.new("PRIVMSG #kenran__", "")
-        res = Kenran::Parser.parse_irc_command raw_cmd
-        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__")
+        msg = "PRIVMSG #kenran__"
+        res = Kenran::Parser.parse_irc_command msg
+        res.should eq Kenran::IrcCommand::PrivMsg.new("#kenran__", "")
       end
     end
   end
