@@ -46,6 +46,10 @@ module Kenran::Parser
     case parts[0]
     when "PRIVMSG"
       Kenran::IrcCommand::PrivMsg.new(parts[1], raw.remaining_input)
+    when "NOTICE"
+      Kenran::IrcCommand::Notice.new(parts[1], raw.remaining_input)
+    else
+      Kenran::IrcCommand::UnhandledCommand.new(parts[1], raw.remaining_input)
     end
   end
 
