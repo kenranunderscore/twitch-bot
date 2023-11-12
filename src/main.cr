@@ -6,8 +6,11 @@ CLIENT_ID = "m4oqqr7avpj8d52nbibmjfdu8yj17r"
   sock = connect
   if sock
     token = Twitch.get_token
-    bot = Kenran::Bot.new(sock, token)
-    bot.run
+    client = TwitchChatClient.new(sock, token)
+    client.on_irc_command do |cmd|
+      puts cmd
+    end
+    client.run
 
     puts "bot stopped. refreshing access token"
     if !Twitch.update_tokens(CLIENT_ID)

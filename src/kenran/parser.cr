@@ -1,4 +1,4 @@
-require "./irc_command"
+require "../irc"
 
 module Kenran::Parser
   record Server, host : String
@@ -45,11 +45,11 @@ module Kenran::Parser
     parts = raw.result.split(" ")
     case parts[0]
     when "PRIVMSG"
-      Kenran::IrcCommand::PrivMsg.new(parts[1], raw.remaining_input)
+      IRC::PrivMsg.new(parts[1], raw.remaining_input)
     when "NOTICE"
-      Kenran::IrcCommand::Notice.new(parts[1], raw.remaining_input)
+      IRC::Notice.new(parts[1], raw.remaining_input)
     else
-      Kenran::IrcCommand::UnhandledCommand.new(parts[1], raw.remaining_input)
+      IRC::UnhandledCommand.new(parts[1], raw.remaining_input)
     end
   end
 
@@ -77,5 +77,7 @@ module Kenran::Parser
 
     command_res = parse_irc_command source_res.remaining_input
     puts "parsed command: " + command_res.to_s
+
+    command_res
   end
 end
