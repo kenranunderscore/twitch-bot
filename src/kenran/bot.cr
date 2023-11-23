@@ -21,6 +21,8 @@ def connect : HTTP::WebSocket
   sock
 end
 
+# Given a `WebSocket` and an access *token*, register a handler for Twitch IRC
+# messages, and then `run` the chat client.
 class TwitchChatClient
   def initialize(@sock : HTTP::WebSocket, @token : String)
   end
@@ -49,10 +51,13 @@ class TwitchChatClient
     end
   end
 
+  # Register a handler that receives all `IRC::Command`s.
   def on_irc_command(&handler : IRC::Command ->)
     @command_handler = handler
   end
 
+  # Actually start the chat client and run it indefinitely, calling the
+  # registered IRC command handler for every message.
   def run
     authenticate
     @sock.run
