@@ -4,7 +4,7 @@ require "./kenran/bot"
 
 CLIENT_ID = "m4oqqr7avpj8d52nbibmjfdu8yj17r"
 
-Log.setup(:debug)
+Log.setup(:notice)
 
 2.times do
   sock = connect
@@ -12,7 +12,7 @@ Log.setup(:debug)
     token = Twitch.get_token
     client = TwitchChatClient.new(sock, token)
     client.on_irc_command do |cmd|
-      Log.debug { "command received" }
+      puts cmd.to_s
     end
     client.run
 

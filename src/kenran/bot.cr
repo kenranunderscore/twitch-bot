@@ -42,7 +42,7 @@ class TwitchChatClient
     if handler
       msgs = msg.split("\r\n", remove_empty: true)
       msgs.map do |msg|
-        result = Kenran::Parser.parse_message(msg)
+        result = Kenran::Parser.parse_irc_command(msg)
         handler.call result
       end
     else

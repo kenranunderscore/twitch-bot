@@ -11,6 +11,14 @@ module Kenran::Parser
 
   alias MessageSource = Server | User
 
+  record PrivMsg, channel : String, message : String
+
+  record Notice, channel : String, message : String
+
+  record Unspecified, kind : String, raw_text : String
+
+  alias Message = PrivMsg | Notice | Unspecified
+
   record Success(T), result : T, remaining_input : String
 
   def self.succeed(result, remaining_input)
@@ -37,7 +45,7 @@ module Kenran::Parser
     succeed(source, remaining)
   end
 
-  def self.parse_raw_irc_command(msg)
+  def self.parse_raw_message(msg)
     command_end = msg.index(":")
     if command_end
       succeed(msg[0...command_end].strip, msg[command_end + 1..])
@@ -46,16 +54,16 @@ module Kenran::Parser
     end
   end
 
-  def self.parse_irc_command(msg)
-    raw = parse_raw_irc_command msg
+  def self.parse_message(msg)
+    raw = parse_raw_message(msg)
     parts = raw.result.split(" ")
     case parts[0]
     when "PRIVMSG"
-      IRC::PrivMsg.new(parts[1], raw.remaining_input)
+      PrivMsg.new(parts[1], raw.remaining_input)
     when "NOTICE"
-      IRC::Notice.new(parts[1], raw.remaining_input)
+      Notice.new(parts[1], raw.remaining_input)
     else
-      IRC::UnhandledCommand.new(parts[0], raw.remaining_input)
+      Unspecified.new(parts[0], raw.remaining_input)
     end
   end
 
@@ -70,7 +78,7 @@ module Kenran::Parser
     return succeed(all_pairs, msg[next_space + 1..])
   end
 
-  def self.parse_message(msg)
+  def self.parse_irc_command(msg)
     tags_res = parse_tags msg
     if tags_res.result
       Log.debug &.emit("parsed tags", tags: tags_res.result)
@@ -81,9 +89,17 @@ module Kenran::Parser
       Log.debug &.emit("parsed source", message_source: source_res.result.to_s)
     end
 
-    command_res = parse_irc_command source_res.remaining_input
+    command_res = parse_message source_res.remaining_input
+    case command_res
+    when PrivMsg
+      cmd = IRC::PrivMsg.new(command_res.channel, command_res.message)
+    when Notice
+      cmd = IRC::Notice.new(command_res.channel, command_res.message)
+    else
+      cmd = IRC::UnhandledCommand.new(command_res.kind, command_res.raw_text)
+    end
     Log.debug &.emit("parsed command", command: command_res.to_s)
 
-    command_res
+    IRC::Command.new(cmd, tags_res.result)
   end
 end
