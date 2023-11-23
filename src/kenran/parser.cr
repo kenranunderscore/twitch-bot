@@ -13,6 +13,8 @@ module Kenran::Parser
     Success.new(result, remaining_input)
   end
 
+  # Finds out where a message *msg* originates from and returns that parsed
+  # `MessageSource`.
   def self.parse_message_source(msg)
     remaining = msg
     if msg[0] == ':'
