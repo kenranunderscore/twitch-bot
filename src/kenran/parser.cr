@@ -55,7 +55,7 @@ module Kenran::Parser
     when "NOTICE"
       IRC::Notice.new(parts[1], raw.remaining_input)
     else
-      IRC::UnhandledCommand.new(parts[1], raw.remaining_input)
+      IRC::UnhandledCommand.new(parts[0], raw.remaining_input)
     end
   end
 
