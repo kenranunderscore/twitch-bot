@@ -1,6 +1,10 @@
+require "log"
+
 require "../irc"
 
 module Kenran::Parser
+  Log = ::Log.for("parser")
+
   record Server, host : String
 
   record User, nickname : String, host : String
@@ -69,16 +73,16 @@ module Kenran::Parser
   def self.parse_message(msg)
     tags_res = parse_tags msg
     if tags_res.result
-      puts "parsed tags: " + tags_res.to_s
+      Log.debug &.emit("parsed tags", tags: tags_res.result)
     end
 
     source_res = parse_message_source tags_res.remaining_input
     if source_res.result
-      puts "parsed source: " + source_res.to_s
+      Log.debug &.emit("parsed source", message_source: source_res.result.to_s)
     end
 
     command_res = parse_irc_command source_res.remaining_input
-    puts "parsed command: " + command_res.to_s
+    Log.debug &.emit("parsed command", command: command_res.to_s)
 
     command_res
   end

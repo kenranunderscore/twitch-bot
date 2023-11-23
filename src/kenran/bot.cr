@@ -1,18 +1,16 @@
 require "json"
+require "log"
 
 require "./parser"
 require "../irc"
 require "../twitch"
 
-# FIXME: logging
-
 def handle_ping(msg)
-  puts "PING received:"
-  puts msg
+  Log.debug { "PING received" }
 end
 
 def on_close(close_code)
-  puts "connection closed by Twitch: " + close_code.to_s
+  Log.notice &.emit("connection closed by Twitch", code: close_code.to_s)
 end
 
 def connect : HTTP::WebSocket
@@ -46,7 +44,7 @@ class TwitchChatClient
         handler.call result
       end
     else
-      puts "no handler set"
+      Log.debug { "received message, but no handler is set" }
       return
     end
   end
