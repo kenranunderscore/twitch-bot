@@ -1,5 +1,5 @@
 module IRC
-  alias Tags = Array(String)
+  alias Tags = Hash(String, String)
   record PrivMsg, channel : String, message : String
   record Notice, channel : String, message : String
   record UnhandledCommand, content : String, remaining : String

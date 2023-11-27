@@ -74,8 +74,18 @@ module Kenran::Parser
 
     # if the message contains tags, this has to exist
     next_space = msg.index(" ", 1).as(Int32)
-    all_pairs = msg[1...next_space].split(";")
-    return succeed(all_pairs, msg[next_space + 1..])
+    tags = Hash(String, String).new
+    msg[1...next_space].split(";").each do |s|
+      tag_name_end = s.index("=")
+      if tag_name_end
+        tag = s[0...tag_name_end]
+        value = s[tag_name_end + 1..]
+        if value != ""
+          tags[tag] = value
+        end
+      end
+    end
+    return succeed(tags.empty? ? nil : tags, msg[next_space + 1..])
   end
 
   def self.parse_irc_command(msg)

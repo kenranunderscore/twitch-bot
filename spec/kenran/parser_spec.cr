@@ -4,10 +4,22 @@ require "../../src/kenran/parser"
 
 describe Kenran::Parser do
   describe "trying to parse the tags" do
-    it "succeeds if no tags can be found" do
+    it "succeeds if a tag can be found and parsed" do
+      msg = "@badges=broadcaster/1 :abc!abc@abc.tmi.twitch.tv PRIVMSG #xyz :HeyGuys"
+      res = Kenran::Parser.parse_tags msg
+      expected_tags = {"badges" => "broadcaster/1"}
+      res.result.should eq expected_tags
+    end
+    it "skips empty tags (i.e., without value)" do
       msg = "@badge-info=;badges=broadcaster/1 :abc!abc@abc.tmi.twitch.tv PRIVMSG #xyz :HeyGuys"
       res = Kenran::Parser.parse_tags msg
-      expected_tags = ["badge-info=", "badges=broadcaster/1"]
+      expected_tags = {"badges" => "broadcaster/1"}
+      res.result.should eq expected_tags
+    end
+    it "returns nil if all tags are empty" do
+      msg = "@badge-info=;badges= :abc!abc@abc.tmi.twitch.tv PRIVMSG #xyz :HeyGuys"
+      res = Kenran::Parser.parse_tags msg
+      expected_tags = nil
       res.result.should eq expected_tags
     end
   end
