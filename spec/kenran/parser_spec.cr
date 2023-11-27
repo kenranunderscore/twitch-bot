@@ -1,6 +1,7 @@
 require "spec"
 
 require "../../src/kenran/parser"
+require "../../src/irc"
 
 describe Kenran::Parser do
   describe "trying to parse the tags" do
@@ -28,13 +29,13 @@ describe Kenran::Parser do
     it "works for user messages" do
       msg = ":kenran__!kenran__@kenran__.tmi.twitch.tv PRIVMSG #kenran__ :blub"
       res = Kenran::Parser.parse_message_source msg
-      expected_source = Kenran::Parser::User.new("kenran__", "kenran__@kenran__.tmi.twitch.tv")
+      expected_source = IRC::User.new("kenran__", "kenran__@kenran__.tmi.twitch.tv")
       res.result.should eq expected_source
     end
     it "works for server messages" do
       msg = ":kenranbot.tmi.twitch.tv 366 kenranbot #kenran__ :End of /NAMES list"
       res = Kenran::Parser.parse_message_source msg
-      expected = Kenran::Parser::Server.new("kenranbot.tmi.twitch.tv")
+      expected = IRC::Server.new("kenranbot.tmi.twitch.tv")
       res.result.should eq expected
     end
   end

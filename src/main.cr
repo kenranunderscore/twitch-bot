@@ -12,7 +12,23 @@ Log.setup(:notice)
     token = Twitch.get_token
     client = TwitchChatClient.new(sock, token)
     client.on_irc_command do |cmd|
-      puts cmd.to_s
+      Log.notice { cmd.to_s }
+      message = cmd.message
+      case message
+      when IRC::PrivMsg
+        tags = cmd.tags
+        if tags
+          first = tags["first-msg"]
+          if first == "1"
+            source = message.source
+            case source
+            when IRC::User
+              response = "HeyGuys @" + source.nickname
+              client.send_msg(response)
+            end
+          end
+        end
+      end
     end
     client.run
 

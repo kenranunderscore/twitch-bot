@@ -5,12 +5,6 @@ require "../irc"
 module Kenran::Parser
   Log = ::Log.for("parser")
 
-  record Server, host : String
-
-  record User, nickname : String, host : String
-
-  alias MessageSource = Server | User
-
   record PrivMsg, channel : String, message : String
 
   record Notice, channel : String, message : String
@@ -35,9 +29,9 @@ module Kenran::Parser
         raw_message_source = msg[1...next_space]
         parts = raw_message_source.split("!")
         if parts.size == 2
-          source = User.new(parts[0], parts[1])
+          source = IRC::User.new(parts[0], parts[1])
         else
-          source = Server.new(parts[0])
+          source = IRC::Server.new(parts[0])
         end
         remaining = msg[next_space + 1..]
       end
@@ -102,7 +96,8 @@ module Kenran::Parser
     command_res = parse_message source_res.remaining_input
     case command_res
     when PrivMsg
-      cmd = IRC::PrivMsg.new(command_res.channel, command_res.message)
+      # source has to always be there for messages
+      cmd = IRC::PrivMsg.new(command_res.channel, command_res.message, source_res.result.as(IRC::MessageSource))
     when Notice
       cmd = IRC::Notice.new(command_res.channel, command_res.message)
     else

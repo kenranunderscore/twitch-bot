@@ -56,6 +56,11 @@ class TwitchChatClient
     @command_handler = handler
   end
 
+  # Send a message to the channel
+  def send_msg(msg : String)
+    @sock.send("PRIVMSG #kenran__ :" + msg)
+  end
+
   # Actually start the chat client and run it indefinitely, calling the
   # registered IRC command handler for every message.
   def run
