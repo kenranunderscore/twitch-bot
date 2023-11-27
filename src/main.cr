@@ -23,8 +23,7 @@ Log.setup(:notice)
             source = message.source
             case source
             when IRC::User
-              response = "HeyGuys @" + source.nickname
-              client.send_msg(response)
+              client.reply_to(tags["id"].as(String), "HeyGuys")
             end
           end
         end

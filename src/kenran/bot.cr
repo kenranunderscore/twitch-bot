@@ -61,6 +61,12 @@ class TwitchChatClient
     @sock.send("PRIVMSG #kenran__ :" + msg)
   end
 
+  # Reply to message by ID
+  def reply_to(id : String, msg : String)
+    tags = "@reply-parent-msg-id=#{id}"
+    @sock.send("#{tags} PRIVMSG #kenran__ :" + msg)
+  end
+
   # Actually start the chat client and run it indefinitely, calling the
   # registered IRC command handler for every message.
   def run
