@@ -1,27 +1,21 @@
-# kenranbot
+# KenranBot
 
-TODO: Write a description here
+**TODO: Add description**
 
 ## Installation
 
-TODO: Write installation instructions here
+If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+by adding `kenran_bot` to your list of dependencies in `mix.exs`:
 
-## Usage
+```elixir
+def deps do
+  [
+    {:kenran_bot, "~> 0.1.0"}
+  ]
+end
+```
 
-TODO: Write usage instructions here
+Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
+and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
+be found at <https://hexdocs.pm/kenran_bot>.
 
-## Development
-
-TODO: Write development instructions here
-
-## Contributing
-
-1. Fork it (<https://github.com/your-github-user/crystal/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
-
-## Contributors
-
-- [Johannes Maier](https://github.com/your-github-user) - creator and maintainer

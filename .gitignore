@@ -1,9 +1,12 @@
-# Crystal stuff
-/docs/
-/lib/
-/bin/
-/.shards/
-*.dwarf
+# Elixir defaults
+/_build/
+/cover/
+/deps/
+/doc/
+/tmp/
+erl_crash.dump
+*.ez
+kenran_bot-*.tar
 
 # Project-specific
 /token

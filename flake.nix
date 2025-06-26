@@ -11,15 +11,7 @@
       let pkgs = import inputs.nixpkgs { inherit system; };
       in {
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            # Nix
-            pkgs.nixfmt
-
-            # Crystal
-            pkgs.crystal
-            pkgs.crystalline
-            pkgs.shards
-          ];
+          packages = [ pkgs.elixir_1_19 ];
         };
       });
 }
