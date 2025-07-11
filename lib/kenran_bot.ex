@@ -3,16 +3,11 @@ defmodule KenranBot do
   Documentation for `KenranBot`.
   """
 
-  @doc """
-  Hello world.
+  use Application
 
-  ## Examples
-
-      iex> KenranBot.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @impl true
+  def start(_type, _args) do
+    children = []
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 end
