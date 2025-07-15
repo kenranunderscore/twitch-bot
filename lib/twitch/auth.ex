@@ -15,7 +15,11 @@ defmodule Twitch.Auth do
 
   @impl true
   def init(_) do
-    {:ok, nil}
+    if File.exists?(@access_token_file) do
+      {:ok, nil}
+    else
+      raise "No token file found, cannot boot"
+    end
   end
 
   @impl true
