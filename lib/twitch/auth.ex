@@ -15,10 +15,33 @@ defmodule Twitch.Auth do
 
   @impl true
   def init(_) do
-    if File.exists?(@access_token_file) do
+    with true <- File.exists?(@access_token_file),
+         {:ok, t} <- File.read(@expires_at_file),
+         {expired_at, _} <- Integer.parse(t) do
+      if System.system_time(:second) > expired_at do
+        IO.puts("Token is expired, refreshing...")
+
+        case update() do
+          {:ok, _token} ->
+            {:ok, nil}
+
+          {:error, reason} ->
+            raise "Could not update expired token: #{reason}"
+        end
+      else
+        IO.puts("Token is still valid")
+      end
+
       {:ok, nil}
     else
-      raise "No token file found, cannot boot"
+      false ->
+        raise "No token file found, cannot boot"
+
+      :error ->
+        raise "Cannot parse expiry date"
+
+      {:error, reason} ->
+        raise "Cannot open expired_at file: #{reason}"
     end
   end
 
