@@ -7,7 +7,7 @@ defmodule KenranBot do
 
   @impl true
   def start(_type, _args) do
-    children = []
+    children = [{Twitch.Auth, nil}]
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 end
