@@ -5,6 +5,7 @@ defmodule Twitch.Auth do
   @client_secret_file "client_secret"
   @expires_at_file "expires_at"
 
+  require Logger
   alias Twitch.Tokens
 
   use GenServer
@@ -19,7 +20,7 @@ defmodule Twitch.Auth do
          {:ok, t} <- File.read(@expires_at_file),
          {expired_at, _} <- Integer.parse(t) do
       if System.system_time(:second) > expired_at do
-        IO.puts("Token is expired, refreshing...")
+        Logger.info("Token is expired, refreshing...")
 
         case update() do
           {:ok, _token} ->
@@ -29,7 +30,7 @@ defmodule Twitch.Auth do
             raise "Could not update expired token: #{reason}"
         end
       else
-        IO.puts("Token is still valid")
+        Logger.info("Token is still valid")
       end
 
       {:ok, nil}
@@ -52,7 +53,7 @@ defmodule Twitch.Auth do
         {:noreply, state}
 
       {:error, reason} ->
-        IO.puts("Could not refresh: #{reason}")
+        Logger.error("Could not refresh: #{reason}")
         {:noreply, state}
     end
   end
@@ -81,7 +82,7 @@ defmodule Twitch.Auth do
     with :ok <- File.write(@access_token_file, access_token),
          :ok <- File.write(@expires_at_file, Integer.to_string(expires_at)),
          :ok <- File.write(@refresh_token_file, refresh_token) do
-      IO.puts("Successfully updated token files")
+      Logger.info("Successfully updated token files")
       :ok
     else
       {:error, reason} ->
