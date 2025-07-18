@@ -10,63 +10,65 @@ defmodule Twitch.Auth do
 
   use GenServer
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link(tokens) do
+    GenServer.start_link(__MODULE__, tokens, name: __MODULE__)
   end
 
   @impl true
-  def init(_) do
-    with true <- File.exists?(@access_token_file),
-         {:ok, t} <- File.read(@expires_at_file),
-         {expired_at, _} <- Integer.parse(t) do
-      if System.system_time(:second) > expired_at do
-        Logger.info("Token is expired, refreshing...")
+  def init(tokens) do
+    if System.system_time(:second) > tokens.expires_at do
+      Logger.info("Token is expired, refreshing...")
 
-        case update() do
-          {:ok, _token} ->
-            {:ok, nil}
+      case update(tokens.refresh_token) do
+        {:ok, new_tokens} ->
+          {:ok, new_tokens}
 
-          {:error, reason} ->
-            raise "Could not update expired token: #{reason}"
-        end
-      else
-        Logger.info("Token is still valid")
+        {:error, reason} ->
+          raise "Could not update expired token: #{reason}"
       end
-
-      {:ok, nil}
     else
-      false ->
-        raise "No token file found, cannot boot"
-
-      :error ->
-        raise "Cannot parse expiry date"
-
-      {:error, reason} ->
-        raise "Cannot open expired_at file: #{reason}"
+      Logger.info("Token is still valid")
     end
+
+    {:ok, tokens}
   end
 
   @impl true
-  def handle_info(:refresh, state) do
-    case update() do
-      {:ok, _} ->
-        {:noreply, state}
+  def handle_info(:refresh, tokens) do
+    case update(tokens.refresh_token) do
+      {:ok, new_tokens} ->
+        {:noreply, new_tokens}
 
       {:error, reason} ->
         Logger.error("Could not refresh: #{reason}")
-        {:noreply, state}
+        {:noreply, tokens}
     end
   end
 
-  def get_token, do: File.read(@access_token_file)
+  def get_token() do
+    GenServer.call(__MODULE__, :get_token)
+  end
 
-  defp update do
-    with {:ok, refresh_token} <- File.read(@refresh_token_file),
-         {:ok, client_secret} <- File.read(@client_secret_file),
+  def get_refresh_token() do
+    GenServer.call(__MODULE__, :get_refresh_token)
+  end
+
+  @impl true
+  def handle_call(:get_token, _from, tokens) do
+    tokens.access_token
+  end
+
+  @impl true
+  def handle_call(:get_refresh_token, _from, tokens) do
+    tokens.refresh_token
+  end
+
+  defp update(refresh_token) do
+    with {:ok, client_secret} <- File.read(@client_secret_file),
          {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
          :ok <- write_token_files(tokens) do
       dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
-      Process.send_after(self(), :refresh, dt)
+      Process.send_after(__MODULE__, :refresh, dt)
       {:ok, tokens}
     else
       {:error, reason} ->
