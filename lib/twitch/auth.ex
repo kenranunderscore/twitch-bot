@@ -12,14 +12,15 @@ defmodule Twitch.Auth do
   @impl GenServer
   def init({client_secret, persistor}) do
     Process.put(:client_secret, client_secret)
+    Process.put(:persistor, persistor)
     tokens = persistor.load_impl()
 
     if System.system_time(:second) > tokens.expires_at do
-      Logger.info("Token is expired, refreshing...")
+      Logger.info("Token has expired, refreshing...")
 
-      case update(tokens.refresh_token, persistor) do
+      case update(tokens.refresh_token) do
         {:ok, new_tokens} ->
-          {:ok, {new_tokens, persistor}}
+          {:ok, new_tokens}
 
         {:error, reason} ->
           raise "Could not update expired token: #{reason}"
@@ -28,18 +29,18 @@ defmodule Twitch.Auth do
       Logger.info("Token is still valid")
     end
 
-    {:ok, {tokens, persistor}}
+    {:ok, tokens}
   end
 
   @impl GenServer
-  def handle_info(:refresh, {tokens, persistor}) do
-    case update(tokens.refresh_token, persistor) do
+  def handle_info(:refresh, tokens) do
+    case update(tokens.refresh_token) do
       {:ok, new_tokens} ->
-        {:noreply, {new_tokens, persistor}}
+        {:noreply, new_tokens}
 
       {:error, reason} ->
         Logger.error("Could not refresh: #{reason}")
-        {:noreply, {tokens, persistor}}
+        {:noreply, tokens}
     end
   end
 
@@ -52,12 +53,13 @@ defmodule Twitch.Auth do
   end
 
   @impl GenServer
-  def handle_call(:get_token, _from, {tokens, _persistor} = state) do
-    {:reply, tokens.access_token, state}
+  def handle_call(:get_token, _from, tokens) do
+    {:reply, tokens.access_token, tokens}
   end
 
-  defp update(refresh_token, persistor) do
+  defp update(refresh_token) do
     client_secret = Process.get(:client_secret)
+    persistor = Process.get(:persistor)
 
     with {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
          :ok <- persistor.persist_impl(tokens) do

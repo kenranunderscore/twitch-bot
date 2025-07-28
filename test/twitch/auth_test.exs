@@ -20,7 +20,7 @@ defmodule Twitch.AuthTest do
   end
 
   test "returns token from persistor" do
-    {:ok, pid} = Twitch.Auth.start_link(FakePersistor)
+    {:ok, pid} = Twitch.Auth.start_link({"the-secret", FakePersistor})
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "fooooo"
