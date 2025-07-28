@@ -23,7 +23,8 @@ defmodule KenranBot.MixProject do
   defp deps do
     [
       {:httpoison, "~> 0.4"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:mox, "~> 1.0", only: :test}
     ]
   end
 end

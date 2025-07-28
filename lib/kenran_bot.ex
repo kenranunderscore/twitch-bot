@@ -5,9 +5,8 @@ defmodule KenranBot do
 
   @impl true
   def start(_type, _args) do
-    persistor = Application.get_env(:kenran_bot, :persistor)
     {:ok, client_secret} = File.read(@client_secret_file)
-    children = [{Twitch.Auth, {client_secret, persistor}}]
+    children = [{Twitch.Auth, client_secret}]
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 end
