@@ -1,17 +1,17 @@
 defmodule Twitch.Auth do
   @client_id "4ddd4mqxrq0wd60141980k3zpeyuvy"
-  @client_secret_file "client_secret"
 
   require Logger
 
   use GenServer
 
-  def start_link(persistor) do
-    GenServer.start_link(__MODULE__, persistor, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @impl GenServer
-  def init(persistor) do
+  def init({client_secret, persistor}) do
+    Process.put(:client_secret, client_secret)
     tokens = persistor.load_impl()
 
     if System.system_time(:second) > tokens.expires_at do
@@ -57,8 +57,9 @@ defmodule Twitch.Auth do
   end
 
   defp update(refresh_token, persistor) do
-    with {:ok, client_secret} <- File.read(@client_secret_file),
-         {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
+    client_secret = Process.get(:client_secret)
+
+    with {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
          :ok <- persistor.persist_impl(tokens) do
       Logger.info("Successfully refreshed token")
       dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
