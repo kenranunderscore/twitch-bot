@@ -1,16 +1,16 @@
 defmodule Twitch.AuthTest do
   use ExUnit.Case, async: true
 
-  defmodule FakePersistor do
-    @behaviour Twitch.TokenPersistor
+  defmodule FakeTokenStorage do
+    @behaviour Twitch.TokenStorage
 
-    @impl Twitch.TokenPersistor
-    def persist_impl(_) do
+    @impl Twitch.TokenStorage
+    def save(_) do
       :ok
     end
 
-    @impl Twitch.TokenPersistor
-    def load_impl() do
+    @impl Twitch.TokenStorage
+    def load() do
       %Twitch.Tokens{
         access_token: "fooooo",
         refresh_token: "refoo",
@@ -19,8 +19,8 @@ defmodule Twitch.AuthTest do
     end
   end
 
-  test "returns token from persistor" do
-    {:ok, pid} = Twitch.Auth.start_link({"the-secret", FakePersistor})
+  test "returns token from storage" do
+    {:ok, pid} = Twitch.Auth.start_link({"the-secret", FakeTokenStorage})
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "fooooo"

@@ -1,13 +1,13 @@
-defmodule Twitch.TokenFilePersistor do
+defmodule Twitch.TokenFileStorage do
   @access_token_file "token"
   @expires_at_file "expires_at"
   @refresh_token_file "refresh_token"
-  @behaviour Twitch.TokenPersistor
+  @behaviour Twitch.TokenStorage
 
   require Logger
 
-  @impl Twitch.TokenPersistor
-  def persist_impl(%Twitch.Tokens{
+  @impl Twitch.TokenStorage
+  def save(%Twitch.Tokens{
         access_token: access_token,
         refresh_token: refresh_token,
         expires_at: expires_at
@@ -15,7 +15,7 @@ defmodule Twitch.TokenFilePersistor do
     with :ok <- File.write(@access_token_file, access_token),
          :ok <- File.write(@expires_at_file, Integer.to_string(expires_at)),
          :ok <- File.write(@refresh_token_file, refresh_token) do
-      Logger.info("Successfully persisted token files")
+      Logger.info("Successfully stored token files")
       :ok
     else
       {:error, reason} ->
@@ -23,8 +23,8 @@ defmodule Twitch.TokenFilePersistor do
     end
   end
 
-  @impl Twitch.TokenPersistor
-  def load_impl() do
+  @impl Twitch.TokenStorage
+  def load() do
     with {:ok, access_token} <- File.read(@access_token_file),
          {:ok, refresh_token} <- File.read(@refresh_token_file),
          {:ok, t} <- File.read(@expires_at_file),

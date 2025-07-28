@@ -10,10 +10,10 @@ defmodule Twitch.Auth do
   end
 
   @impl GenServer
-  def init({client_secret, persistor}) do
+  def init({client_secret, token_storage}) do
     Process.put(:client_secret, client_secret)
-    Process.put(:persistor, persistor)
-    tokens = persistor.load_impl()
+    Process.put(:token_storage, token_storage)
+    tokens = token_storage.load()
 
     if System.system_time(:second) > tokens.expires_at do
       Logger.info("Token has expired, refreshing...")
@@ -59,10 +59,10 @@ defmodule Twitch.Auth do
 
   defp update(refresh_token) do
     client_secret = Process.get(:client_secret)
-    persistor = Process.get(:persistor)
+    token_storage = Process.get(:token_storage)
 
     with {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
-         :ok <- persistor.persist_impl(tokens) do
+         :ok <- token_storage.save(tokens) do
       Logger.info("Successfully refreshed token")
       dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
       Process.send_after(__MODULE__, :refresh, dt)
