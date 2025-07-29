@@ -1,18 +1,17 @@
 defmodule Twitch.AuthTest do
   use ExUnit.Case, async: true
+  use EfxCase
+
   require Logger
 
-  import Mox
-  setup :verify_on_exit!
+  alias Twitch.Auth.Effect
 
   test "returns token from storage" do
-    TokenStorageMock
-    |> expect(:load, fn ->
+    bind(Effect, :load_token, fn ->
       %Twitch.Tokens{access_token: "fooooo", refresh_token: "rt", expires_at: nil}
     end)
-    |> allow(self(), fn -> GenServer.whereis(Twitch.Auth) end)
 
-    {:ok, pid} = Twitch.Auth.start_link("the-secret")
+    {:ok, pid} = Twitch.Auth.start_link(client_secret: "the-secret", name: :auth_test1)
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "fooooo"
@@ -21,19 +20,17 @@ defmodule Twitch.AuthTest do
   test "immediately refreshes expired tokens" do
     {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
 
-    TokenStorageMock
-    |> expect(:load, fn ->
+    bind(Effect, :load_token, fn ->
       %Twitch.Tokens{
         access_token: "old",
         refresh_token: "ref",
         expires_at: DateTime.to_unix(t)
       }
     end)
-    |> expect(:save, fn tokens -> :ok end)
-    |> allow(self(), fn -> GenServer.whereis(Twitch.Auth) end)
 
-    TwitchApiMock
-    |> expect(:refresh_tokens, fn a, _, _ ->
+    bind(Effect, :save_token, fn _ -> :ok end)
+
+    bind(Effect, :refresh_token, fn _, _, _ ->
       {:ok,
        %Twitch.Tokens{
          access_token: "new_token",
@@ -41,9 +38,8 @@ defmodule Twitch.AuthTest do
          expires_at: DateTime.to_unix(t)
        }}
     end)
-    |> allow(self(), fn -> GenServer.whereis(Twitch.Auth) end)
 
-    {:ok, pid} = Twitch.Auth.start_link("the-secret")
+    {:ok, pid} = Twitch.Auth.start_link(client_secret: "the-secret", name: :auth_test2)
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "new_token"

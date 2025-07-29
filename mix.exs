@@ -15,7 +15,7 @@ defmodule KenranBot.MixProject do
   def application do
     [
       mod: {KenranBot, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :efx]
     ]
   end
 
@@ -24,7 +24,7 @@ defmodule KenranBot.MixProject do
     [
       {:httpoison, "~> 0.4"},
       {:jason, "~> 1.4"},
-      {:mox, "~> 1.0", only: :test}
+      {:efx, "~> 0.2.11"}
     ]
   end
 end

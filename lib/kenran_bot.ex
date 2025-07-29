@@ -6,7 +6,7 @@ defmodule KenranBot do
   @impl true
   def start(_type, _args) do
     {:ok, client_secret} = File.read(@client_secret_file)
-    children = [{Twitch.Auth, client_secret: client_secret, name: Twitch.Auth}]
+    children = [{Twitch.Auth, client_secret: client_secret}]
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 end

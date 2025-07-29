@@ -4,6 +4,11 @@ defmodule Twitch.Auth do
   require Logger
 
   use GenServer
+  alias Twitch.Auth.Effect
+
+  def get_token(pid \\ __MODULE__) do
+    GenServer.call(pid, :get_token)
+  end
 
   def start_link(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
@@ -13,9 +18,12 @@ defmodule Twitch.Auth do
 
   @impl GenServer
   def init(client_secret) do
-    # simon sagt ist scheiße
+    # simon sagt ist kacke
+    # -> doch in den state
+    # -> struct
+    # -> inspect-protokoll überschreiben
     Process.put(:client_secret, client_secret)
-    tokens = Twitch.TokenStorage.load()
+    tokens = Effect.load_token()
 
     if System.system_time(:second) > tokens.expires_at do
       Logger.info("Token has expired, refreshing...")
@@ -45,23 +53,19 @@ defmodule Twitch.Auth do
     end
   end
 
-  def get_token(pid \\ __MODULE__) do
-    GenServer.call(pid, :get_token)
-  end
-
   @impl GenServer
   def handle_call(:get_token, _from, tokens) do
-    Logger.error(inspect(tokens))
     {:reply, tokens.access_token, tokens}
   end
 
   defp update(refresh_token) do
     client_secret = Process.get(:client_secret)
 
-    with {:ok, tokens} <- Twitch.Api.refresh_tokens(@client_id, client_secret, refresh_token),
-         :ok <- Twitch.TokenStorage.save(tokens) do
+    with {:ok, tokens} <- Effect.refresh_token(@client_id, client_secret, refresh_token),
+         :ok <- Effect.save_token(tokens) do
       Logger.info("Successfully refreshed token")
       dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
+      # FIXME: effect!
       Process.send_after(__MODULE__, :refresh, dt)
       {:ok, tokens}
     else
