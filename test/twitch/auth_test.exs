@@ -17,4 +17,35 @@ defmodule Twitch.AuthTest do
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "fooooo"
   end
+
+  test "immediately refreshes expired tokens" do
+    {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
+
+    TokenStorageMock
+    |> expect(:load, fn ->
+      %Twitch.Tokens{
+        access_token: "old",
+        refresh_token: "ref",
+        expires_at: DateTime.to_unix(t)
+      }
+    end)
+    |> expect(:save, fn tokens -> :ok end)
+    |> allow(self(), fn -> GenServer.whereis(Twitch.Auth) end)
+
+    TwitchApiMock
+    |> expect(:refresh_tokens, fn a, _, _ ->
+      {:ok,
+       %Twitch.Tokens{
+         access_token: "new_token",
+         refresh_token: "ref2",
+         expires_at: DateTime.to_unix(t)
+       }}
+    end)
+    |> allow(self(), fn -> GenServer.whereis(Twitch.Auth) end)
+
+    {:ok, pid} = Twitch.Auth.start_link("the-secret")
+
+    returned_token = Twitch.Auth.get_token(pid)
+    assert returned_token == "new_token"
+  end
 end

@@ -26,9 +26,8 @@ defmodule Twitch.Auth do
       end
     else
       Logger.info("Token is still valid")
+      {:ok, tokens}
     end
-
-    {:ok, tokens}
   end
 
   @impl GenServer
@@ -53,6 +52,7 @@ defmodule Twitch.Auth do
 
   @impl GenServer
   def handle_call(:get_token, _from, tokens) do
+    Logger.error(inspect(tokens))
     {:reply, tokens.access_token, tokens}
   end
 
