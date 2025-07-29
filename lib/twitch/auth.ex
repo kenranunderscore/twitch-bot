@@ -5,12 +5,15 @@ defmodule Twitch.Auth do
 
   use GenServer
 
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+  def start_link(opts) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    client_secret = Keyword.fetch!(opts, :client_secret)
+    GenServer.start_link(__MODULE__, client_secret, name: name)
   end
 
   @impl GenServer
   def init(client_secret) do
+    # simon sagt ist scheiße
     Process.put(:client_secret, client_secret)
     tokens = Twitch.TokenStorage.load()
 
@@ -42,12 +45,8 @@ defmodule Twitch.Auth do
     end
   end
 
-  def get_token(pid) do
+  def get_token(pid \\ __MODULE__) do
     GenServer.call(pid, :get_token)
-  end
-
-  def get_token() do
-    get_token(__MODULE__)
   end
 
   @impl GenServer
