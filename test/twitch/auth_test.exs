@@ -11,7 +11,7 @@ defmodule Twitch.AuthTest do
       %Twitch.Tokens{access_token: "fooooo", refresh_token: "rt", expires_at: nil}
     end)
 
-    {:ok, pid} = Twitch.Auth.start_link(client_secret: "the-secret", name: :auth_test1)
+    {:ok, pid} = Twitch.Auth.start_link(client: %Twitch.Client{}, name: :auth_test1)
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "fooooo"
@@ -30,7 +30,7 @@ defmodule Twitch.AuthTest do
 
     bind(Effect, :save_token, fn _ -> :ok end)
 
-    bind(Effect, :refresh_token, fn _, _, _ ->
+    bind(Effect, :refresh_token, fn _, _ ->
       {:ok,
        %Twitch.Tokens{
          access_token: "new_token",
@@ -39,7 +39,7 @@ defmodule Twitch.AuthTest do
        }}
     end)
 
-    {:ok, pid} = Twitch.Auth.start_link(client_secret: "the-secret", name: :auth_test2)
+    {:ok, pid} = Twitch.Auth.start_link(client: %Twitch.Client{}, name: :auth_test2)
 
     returned_token = Twitch.Auth.get_token(pid)
     assert returned_token == "new_token"

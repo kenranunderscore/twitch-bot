@@ -11,4 +11,5 @@ kenran_bot-*.tar
 # Project-specific
 /token
 /refresh_token
-/client_secret
+/client
+/expires_at

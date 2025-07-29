@@ -11,9 +11,9 @@ defmodule Twitch.Auth.Effect do
     Twitch.TokenStorage.save(tokens)
   end
 
-  @spec refresh_token(String.t(), String.t(), String.t()) ::
+  @spec refresh_token(%Twitch.Client{}, String.t()) ::
           {:ok, %Twitch.Tokens{}} | {:error, term()}
-  defeffect refresh_token(client_id, client_secret, refresh_token) do
-    Twitch.Api.refresh_tokens(client_id, client_secret, refresh_token)
+  defeffect refresh_token(client, refresh_token) do
+    Twitch.Api.refresh_tokens(client, refresh_token)
   end
 end

@@ -1,7 +1,8 @@
 defmodule Twitch.Api do
   alias Twitch.Tokens
+  alias Twitch.Client
 
-  def refresh_tokens(client_id, client_secret, refresh_token) do
+  def refresh_tokens(%Client{id: client_id, secret: client_secret}, refresh_token) do
     url = "https://id.twitch.tv/oauth2/token"
 
     body =

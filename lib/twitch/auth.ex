@@ -1,10 +1,16 @@
 defmodule Twitch.Auth do
-  @client_id "4ddd4mqxrq0wd60141980k3zpeyuvy"
-
   require Logger
 
   use GenServer
   alias Twitch.Auth.Effect
+
+  defmodule State do
+    defstruct [:tokens, :client]
+
+    def set_tokens(state, tokens) do
+      %{state | tokens: tokens}
+    end
+  end
 
   def get_token(pid \\ __MODULE__) do
     GenServer.call(pid, :get_token)
@@ -12,56 +18,50 @@ defmodule Twitch.Auth do
 
   def start_link(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
-    client_secret = Keyword.fetch!(opts, :client_secret)
-    GenServer.start_link(__MODULE__, client_secret, name: name)
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
   @impl GenServer
-  def init(client_secret) do
-    # simon sagt ist kacke
-    # -> doch in den state
-    # -> struct
-    # -> inspect-protokoll überschreiben
-    Process.put(:client_secret, client_secret)
+  def init(opts) do
+    client = Keyword.fetch!(opts, :client)
     tokens = Effect.load_token()
+    initial_state = %State{tokens: tokens, client: client}
 
     if System.system_time(:second) > tokens.expires_at do
       Logger.info("Token has expired, refreshing...")
 
-      case update(tokens.refresh_token) do
+      case update(client, tokens.refresh_token) do
         {:ok, new_tokens} ->
-          {:ok, new_tokens}
+          {:ok, initial_state |> State.set_tokens(new_tokens)}
 
         {:error, reason} ->
           raise "Could not update expired token: #{reason}"
       end
     else
       Logger.info("Token is still valid")
-      {:ok, tokens}
+      {:ok, initial_state}
     end
   end
 
   @impl GenServer
-  def handle_info(:refresh, tokens) do
-    case update(tokens.refresh_token) do
+  def handle_info(:refresh, state) do
+    case update(state.client, state.tokens.refresh_token) do
       {:ok, new_tokens} ->
         {:noreply, new_tokens}
 
       {:error, reason} ->
         Logger.error("Could not refresh: #{reason}")
-        {:noreply, tokens}
+        {:noreply, state.tokens}
     end
   end
 
   @impl GenServer
-  def handle_call(:get_token, _from, tokens) do
-    {:reply, tokens.access_token, tokens}
+  def handle_call(:get_token, _from, state) do
+    {:reply, state.tokens.access_token, state}
   end
 
-  defp update(refresh_token) do
-    client_secret = Process.get(:client_secret)
-
-    with {:ok, tokens} <- Effect.refresh_token(@client_id, client_secret, refresh_token),
+  defp update(client, refresh_token) do
+    with {:ok, tokens} <- Effect.refresh_token(client, refresh_token),
          :ok <- Effect.save_token(tokens) do
       Logger.info("Successfully refreshed token")
       dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
