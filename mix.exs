@@ -7,7 +7,8 @@ defmodule KenranBot.MixProject do
       version: "0.1.0",
       elixir: "~> 1.19-rc",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -26,5 +27,9 @@ defmodule KenranBot.MixProject do
       {:jason, "~> 1.4"},
       {:efx, "~> 0.2.11"}
     ]
+  end
+
+  defp aliases do
+    [test: ["test --no-start"]]
   end
 end
