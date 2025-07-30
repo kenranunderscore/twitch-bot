@@ -13,7 +13,7 @@ defmodule Twitch.TokenStorage do
     with :ok <- File.write(@access_token_file, access_token),
          :ok <- File.write(@expires_at_file, Integer.to_string(expires_at)),
          :ok <- File.write(@refresh_token_file, refresh_token) do
-      Logger.info("Successfully stored token files")
+      Logger.info("Tokens stored")
       :ok
     else
       {:error, reason} ->

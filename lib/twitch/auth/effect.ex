@@ -16,4 +16,9 @@ defmodule Twitch.Auth.Effect do
   defeffect refresh_token(client, refresh_token) do
     Twitch.Api.refresh_tokens(client, refresh_token)
   end
+
+  @spec refresh_token_after(integer()) :: any()
+  defeffect refresh_token_after(seconds) do
+    Process.send_after(self(), :refresh, seconds)
+  end
 end

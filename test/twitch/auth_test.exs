@@ -17,31 +17,63 @@ defmodule Twitch.AuthTest do
     assert returned_token == "fooooo"
   end
 
-  test "immediately refreshes expired tokens", config do
-    {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
+  describe "token refresh" do
+    test "happens immediately when booting with expired tokens", config do
+      {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
 
-    bind(Effect, :load_token, fn ->
-      %Twitch.Tokens{
-        access_token: "old",
-        refresh_token: "ref",
-        expires_at: DateTime.to_unix(t)
-      }
-    end)
+      bind(Effect, :save_token, fn _ -> :ok end)
+      bind(Effect, :refresh_token_after, fn _ -> nil end)
 
-    bind(Effect, :save_token, fn _ -> :ok end)
+      bind(Effect, :load_token, fn ->
+        %Twitch.Tokens{
+          access_token: "old",
+          refresh_token: "ref",
+          expires_at: DateTime.to_unix(t)
+        }
+      end)
 
-    bind(Effect, :refresh_token, fn _, _ ->
-      {:ok,
-       %Twitch.Tokens{
-         access_token: "new_token",
-         refresh_token: "ref2",
-         expires_at: DateTime.to_unix(t)
-       }}
-    end)
+      bind(Effect, :refresh_token, fn _, _ ->
+        {:ok,
+         %Twitch.Tokens{
+           access_token: "new_token",
+           refresh_token: "ref2",
+           expires_at: DateTime.to_unix(t)
+         }}
+      end)
 
-    {:ok, pid} = Twitch.Auth.start_link(client: %Twitch.Client{}, name: config.test)
+      {:ok, pid} = Twitch.Auth.start_link(client: %Twitch.Client{}, name: config.test)
 
-    returned_token = Twitch.Auth.get_token(pid)
-    assert returned_token == "new_token"
+      returned_token = Twitch.Auth.get_token(pid)
+      assert returned_token == "new_token"
+    end
+
+    test "is triggered automatically when necessary", config do
+      {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
+
+      bind(Effect, :save_token, fn _ -> :ok end)
+
+      # This is the automatic refresh "assignment" that should be triggered
+      # exactly once
+      bind(Effect, :refresh_token_after, fn _ -> nil end, calls: 1)
+
+      bind(Effect, :load_token, fn ->
+        %Twitch.Tokens{
+          access_token: "old",
+          refresh_token: "ref",
+          expires_at: DateTime.to_unix(t)
+        }
+      end)
+
+      bind(Effect, :refresh_token, fn _, _ ->
+        {:ok,
+         %Twitch.Tokens{
+           access_token: "new_token",
+           refresh_token: "ref2",
+           expires_at: DateTime.to_unix(t)
+         }}
+      end)
+
+      {:ok, _} = Twitch.Auth.start_link(client: %Twitch.Client{}, name: config.test)
+    end
   end
 end

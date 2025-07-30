@@ -28,14 +28,14 @@ defmodule Twitch.Auth do
     initial_state = %State{tokens: tokens, client: client}
 
     if System.system_time(:second) > tokens.expires_at do
-      Logger.info("Token has expired, refreshing...")
+      Logger.info("Token expired")
 
       case update(client, tokens.refresh_token) do
         {:ok, new_tokens} ->
           {:ok, initial_state |> State.set_tokens(new_tokens)}
 
         {:error, reason} ->
-          raise "Could not update expired token: #{reason}"
+          raise "Failed token refresh: #{reason}"
       end
     else
       Logger.info("Token is still valid")
@@ -47,10 +47,11 @@ defmodule Twitch.Auth do
   def handle_info(:refresh, state) do
     case update(state.client, state.tokens.refresh_token) do
       {:ok, new_tokens} ->
+        Logger.info("Refreshed token automatically")
         {:noreply, new_tokens}
 
       {:error, reason} ->
-        Logger.error("Could not refresh: #{reason}")
+        Logger.error("Failed token refresh: #{reason}")
         {:noreply, state.tokens}
     end
   end
@@ -61,12 +62,13 @@ defmodule Twitch.Auth do
   end
 
   defp update(client, refresh_token) do
+    Logger.info("Refreshing token...")
+
     with {:ok, tokens} <- Effect.refresh_token(client, refresh_token),
          :ok <- Effect.save_token(tokens) do
-      Logger.info("Successfully refreshed token")
-      dt = max(0, tokens.expires_at - System.system_time(:second) - 120)
-      # FIXME: effect!
-      Process.send_after(__MODULE__, :refresh, dt)
+      Logger.info("Refreshed token")
+      dt = 1000 * max(0, tokens.expires_at - System.system_time(:second) - 120)
+      Effect.refresh_token_after(dt)
       {:ok, tokens}
     else
       {:error, reason} ->
