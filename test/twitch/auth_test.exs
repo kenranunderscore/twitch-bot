@@ -21,7 +21,6 @@ defmodule Twitch.AuthTest do
     test "happens immediately when booting with expired tokens", config do
       {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
 
-      bind(Effect, :save_token, fn _ -> :ok end)
       bind(Effect, :refresh_token_after, fn _ -> nil end)
 
       bind(Effect, :load_token, fn ->
@@ -49,8 +48,6 @@ defmodule Twitch.AuthTest do
 
     test "is triggered automatically when necessary", config do
       {:ok, t} = DateTime.new(~D[2025-07-01], ~T[00:00:00], "Etc/UTC")
-
-      bind(Effect, :save_token, fn _ -> :ok end)
 
       # This is the automatic refresh "assignment" that should be triggered
       # exactly once

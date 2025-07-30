@@ -64,13 +64,13 @@ defmodule Twitch.Auth do
   defp update(client, refresh_token) do
     Logger.info("Refreshing token...")
 
-    with {:ok, tokens} <- Effect.refresh_token(client, refresh_token),
-         :ok <- Effect.save_token(tokens) do
-      Logger.info("Refreshed token")
-      dt = 1000 * max(0, tokens.expires_at - System.system_time(:second) - 120)
-      Effect.refresh_token_after(dt)
-      {:ok, tokens}
-    else
+    case Effect.refresh_token(client, refresh_token) do
+      {:ok, tokens} ->
+        Logger.info("Refreshed token")
+        dt = 1000 * max(0, tokens.expires_at - System.system_time(:second) - 120)
+        Effect.refresh_token_after(dt)
+        {:ok, tokens}
+
       {:error, reason} ->
         {:error, reason}
     end
