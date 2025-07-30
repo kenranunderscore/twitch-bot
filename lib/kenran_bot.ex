@@ -4,7 +4,8 @@ defmodule KenranBot do
   @impl true
   def start(_type, _args) do
     {:ok, client} = Twitch.Client.load()
-    children = [{Twitch.Auth, client: client}]
+    {:ok, tokens} = Twitch.TokenStorage.load()
+    children = [{Twitch.Auth, client: client, tokens: tokens}]
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 end

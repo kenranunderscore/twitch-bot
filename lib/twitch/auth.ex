@@ -24,7 +24,7 @@ defmodule Twitch.Auth do
   @impl GenServer
   def init(opts) do
     client = Keyword.fetch!(opts, :client)
-    tokens = Effect.load_token()
+    tokens = Keyword.fetch!(opts, :tokens)
     initial_state = %State{tokens: tokens, client: client}
 
     if System.system_time(:second) > tokens.expires_at do

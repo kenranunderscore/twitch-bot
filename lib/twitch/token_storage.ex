@@ -26,11 +26,12 @@ defmodule Twitch.TokenStorage do
          {:ok, refresh_token} <- File.read(@refresh_token_file),
          {:ok, t} <- File.read(@expires_at_file),
          {expires_at, _} <- Integer.parse(t) do
-      %Twitch.Tokens{
-        access_token: access_token,
-        refresh_token: refresh_token,
-        expires_at: expires_at
-      }
+      {:ok,
+       %Twitch.Tokens{
+         access_token: access_token,
+         refresh_token: refresh_token,
+         expires_at: expires_at
+       }}
     else
       :error ->
         raise "Cannot parse expiry date"

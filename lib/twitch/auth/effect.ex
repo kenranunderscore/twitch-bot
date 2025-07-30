@@ -1,11 +1,6 @@
 defmodule Twitch.Auth.Effect do
   use Efx
 
-  @spec load_token() :: {:ok, %Twitch.Tokens{}} | {:error, term()}
-  defeffect load_token() do
-    Twitch.TokenStorage.load()
-  end
-
   @spec refresh_token(%Twitch.Client{}, String.t()) ::
           {:ok, %Twitch.Tokens{}} | {:error, term()}
   defeffect refresh_token(client, refresh_token) do
