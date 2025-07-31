@@ -1,4 +1,4 @@
-defmodule KenranBot do
+defmodule Main do
   use Application
 
   @impl true
