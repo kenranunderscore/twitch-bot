@@ -1,5 +1,6 @@
 defmodule Twitch.Tokens do
   @derive {Jason.Encoder, []}
+  @derive {Inspect, [only: [:expires_at]]}
   defstruct [:access_token, :refresh_token, :expires_at]
 
   def from_json(json) do
