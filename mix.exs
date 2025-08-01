@@ -25,7 +25,8 @@ defmodule KenranBot.MixProject do
     [
       {:httpoison, "~> 0.4"},
       {:jason, "~> 1.4"},
-      {:efx, "~> 0.2.11"}
+      {:efx, "~> 0.2.11"},
+      {:websockex, "~> 0.4.3"}
     ]
   end
 

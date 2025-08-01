@@ -6,6 +6,12 @@ defmodule Main do
     {:ok, client} = Twitch.Client.load()
     {:ok, tokens} = Twitch.TokenStorage.load()
     children = [{Twitch.Auth, client: client, tokens: tokens}]
-    Supervisor.start_link(children, strategy: :one_for_one)
+    res = Supervisor.start_link(children, strategy: :one_for_one)
+
+    {:ok, pid} = Bot.start_link()
+    Bot.authenticate(pid, tokens.access_token)
+
+    Process.sleep(1500)
+    res
   end
 end
