@@ -13,15 +13,21 @@ defmodule Kenran.Parser do
     defstruct [:kind, :raw_text]
   end
 
+  defmodule Command do
+    defstruct [:command, :tags, :source]
+  end
+
   defmodule Success do
     defstruct [:result, :remaining_input]
   end
 
+  @spec succeed(term(), String.t()) :: %Success{}
   def succeed(result, remaining_input) do
     %Success{result: result, remaining_input: remaining_input}
   end
 
-  def parse_message_source(msg) when is_binary(msg) do
+  @spec parse_message_source(String.t()) :: %Success{}
+  def parse_message_source(msg) do
     case msg do
       ":" <> rest ->
         case String.split(rest, " ", parts: 2) do
@@ -49,6 +55,7 @@ defmodule Kenran.Parser do
     end
   end
 
+  @spec parse_raw_message(binary()) :: %Success{}
   def parse_raw_message(msg) when is_binary(msg) do
     case String.split(msg, ":", parts: 2) do
       [command_part, content] ->
@@ -59,7 +66,8 @@ defmodule Kenran.Parser do
     end
   end
 
-  def parse_message(msg) when is_binary(msg) do
+  @spec parse_message(String.t()) :: %PrivMsg{} | %Notice{} | %Unspecified{}
+  def parse_message(msg) do
     %Success{result: raw_result, remaining_input: remaining} = parse_raw_message(msg)
     parts = String.split(raw_result)
 
@@ -74,11 +82,12 @@ defmodule Kenran.Parser do
         %Unspecified{kind: command, raw_text: remaining}
 
       [] ->
-        %Unspecified{kind: "", raw_text: remaining}
+        %Unspecified{kind: nil, raw_text: remaining}
     end
   end
 
-  def parse_tags(msg) when is_binary(msg) do
+  @spec parse_tags(String.t()) :: %Success{}
+  def parse_tags(msg) do
     case msg do
       "@" <> rest ->
         case String.split(rest, " ", parts: 2) do
@@ -106,44 +115,17 @@ defmodule Kenran.Parser do
         [tag, value] when value != "" ->
           [{tag, value}]
 
-        [_tag, ""] ->
-          []
-
-        [_tag] ->
+        _ ->
           []
       end
     end)
   end
 
+  @spec parse_irc_command(String.t()) :: %Command{}
   def parse_irc_command(msg) when is_binary(msg) do
     %Success{result: tags, remaining_input: after_tags} = parse_tags(msg)
-
-    if tags do
-      Logger.debug("parsed tags: #{inspect(tags)}")
-    end
-
     %Success{result: source, remaining_input: after_source} = parse_message_source(after_tags)
-
-    if source do
-      Logger.debug("parsed source: #{inspect(source)}")
-    end
-
-    command_result = parse_message(after_source)
-
-    cmd =
-      case command_result do
-        %PrivMsg{channel: channel, message: message} ->
-          %{type: :privmsg, channel: channel, message: message, source: source}
-
-        %Notice{channel: channel, message: message} ->
-          %{type: :notice, channel: channel, message: message}
-
-        %Unspecified{kind: kind, raw_text: raw_text} ->
-          %{type: :unhandled, kind: kind, raw_text: raw_text}
-      end
-
-    Logger.debug("parsed command: #{inspect(command_result)}")
-
-    %{command: cmd, tags: tags}
+    cmd = parse_message(after_source)
+    %Command{command: cmd, tags: tags, source: source}
   end
 end
