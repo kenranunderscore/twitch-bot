@@ -28,6 +28,7 @@ defmodule Bot do
 
   def handle_frame({:text, msg}, state) do
     Logger.debug("Received: #{msg}")
+    msg |> Kenran.Parser.parse_irc_command() |> IO.inspect()
     {:ok, state}
   end
 
