@@ -8,10 +8,10 @@ defmodule Main do
     children = [{Twitch.Auth, client: client, token: token}]
     res = Supervisor.start_link(children, strategy: :one_for_one)
 
-    {:ok, pid} = Bot.start_link()
-    Bot.authenticate(pid, token.access_token)
-
-    Process.sleep(1500)
+    auth_pid = GenServer.whereis(Twitch.Auth)
+    access_token = Twitch.Auth.get_token(auth_pid)
+    {:ok, bot_pid} = Bot.start_link()
+    Bot.authenticate(bot_pid, access_token)
     res
   end
 end
