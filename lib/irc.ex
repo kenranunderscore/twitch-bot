@@ -45,6 +45,9 @@ defmodule Kenran.Parser do
     end
   end
 
+  @spec parse_source_parts(String.t()) ::
+          %{type: :user, nick: String.t(), user: String.t()}
+          | %{type: :server, name: String.t()}
   defp parse_source_parts(raw_message_source) do
     case String.split(raw_message_source, "!", parts: 2) do
       [nick, user] ->
@@ -55,7 +58,7 @@ defmodule Kenran.Parser do
     end
   end
 
-  @spec parse_raw_message(binary()) :: %Success{}
+  @spec parse_raw_message(String.t()) :: %Success{}
   def parse_raw_message(msg) when is_binary(msg) do
     case String.split(msg, ":", parts: 2) do
       [command_part, content] ->
