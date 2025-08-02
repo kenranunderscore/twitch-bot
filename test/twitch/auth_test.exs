@@ -12,7 +12,7 @@ defmodule Twitch.AuthTest do
   end
 
   defp expired_token do
-    %Twitch.Tokens{
+    %Twitch.Token{
       access_token: "old",
       refresh_token: "ref",
       expires_at: DateTime.to_unix(old_timestamp())
@@ -23,7 +23,7 @@ defmodule Twitch.AuthTest do
     {:ok, pid} =
       Twitch.Auth.start_link(
         client: %Twitch.Client{},
-        tokens: %Twitch.Tokens{access_token: "fooooo", refresh_token: "rt", expires_at: nil},
+        token: %Twitch.Token{access_token: "fooooo", refresh_token: "rt", expires_at: nil},
         name: config.test
       )
 
@@ -32,12 +32,12 @@ defmodule Twitch.AuthTest do
   end
 
   describe "token refresh" do
-    test "happens immediately when booting with expired tokens", config do
+    test "happens immediately when booting with expired token", config do
       bind(Effect, :refresh_token_after, fn _ -> nil end)
 
       bind(Effect, :refresh_token, fn _, _ ->
         {:ok,
-         %Twitch.Tokens{
+         %Twitch.Token{
            access_token: "new_token",
            refresh_token: "ref2",
            expires_at: DateTime.to_unix(old_timestamp())
@@ -47,7 +47,7 @@ defmodule Twitch.AuthTest do
       {:ok, pid} =
         Twitch.Auth.start_link(
           client: %Twitch.Client{},
-          tokens: expired_token(),
+          token: expired_token(),
           name: config.test
         )
 
@@ -62,7 +62,7 @@ defmodule Twitch.AuthTest do
 
       bind(Effect, :refresh_token, fn _, _ ->
         {:ok,
-         %Twitch.Tokens{
+         %Twitch.Token{
            access_token: "new_token",
            refresh_token: "ref2",
            expires_at: DateTime.to_unix(old_timestamp())
@@ -72,7 +72,7 @@ defmodule Twitch.AuthTest do
       {:ok, _} =
         Twitch.Auth.start_link(
           client: %Twitch.Client{},
-          tokens: expired_token(),
+          token: expired_token(),
           name: config.test
         )
     end

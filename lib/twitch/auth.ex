@@ -5,10 +5,10 @@ defmodule Twitch.Auth do
   alias Twitch.Auth.Effect
 
   defmodule State do
-    defstruct [:tokens, :client]
+    defstruct [:token, :client]
 
-    def set_tokens(state, tokens) do
-      %{state | tokens: tokens}
+    def set_token(state, token) do
+      %{state | token: token}
     end
   end
 
@@ -24,15 +24,15 @@ defmodule Twitch.Auth do
   @impl GenServer
   def init(opts) do
     client = Keyword.fetch!(opts, :client)
-    tokens = Keyword.fetch!(opts, :tokens)
-    initial_state = %State{tokens: tokens, client: client}
+    token = Keyword.fetch!(opts, :token)
+    initial_state = %State{token: token, client: client}
 
-    if System.system_time(:second) > tokens.expires_at do
+    if System.system_time(:second) > token.expires_at do
       Logger.info("Token expired")
 
-      case update(client, tokens.refresh_token) do
-        {:ok, new_tokens} ->
-          {:ok, initial_state |> State.set_tokens(new_tokens)}
+      case update(client, token.refresh_token) do
+        {:ok, new_token} ->
+          {:ok, initial_state |> State.set_token(new_token)}
 
         {:error, reason} ->
           raise "Failed token refresh: #{reason}"
@@ -45,31 +45,31 @@ defmodule Twitch.Auth do
 
   @impl GenServer
   def handle_info(:refresh, state) do
-    case update(state.client, state.tokens.refresh_token) do
-      {:ok, new_tokens} ->
+    case update(state.client, state.token.refresh_token) do
+      {:ok, new_token} ->
         Logger.info("Refreshed token automatically")
-        {:noreply, new_tokens}
+        {:noreply, new_token}
 
       {:error, reason} ->
         Logger.error("Failed token refresh: #{reason}")
-        {:noreply, state.tokens}
+        {:noreply, state.token}
     end
   end
 
   @impl GenServer
   def handle_call(:get_token, _from, state) do
-    {:reply, state.tokens.access_token, state}
+    {:reply, state.token.access_token, state}
   end
 
   defp update(client, refresh_token) do
     Logger.info("Refreshing token...")
 
     case Effect.refresh_token(client, refresh_token) do
-      {:ok, tokens} ->
+      {:ok, token} ->
         Logger.info("Refreshed token")
-        dt = 1000 * max(0, tokens.expires_at - System.system_time(:second) - 120)
+        dt = 1000 * max(0, token.expires_at - System.system_time(:second) - 120)
         Effect.refresh_token_after(dt)
-        {:ok, tokens}
+        {:ok, token}
 
       {:error, reason} ->
         {:error, reason}

@@ -1,8 +1,8 @@
 defmodule Twitch.Api do
-  alias Twitch.Tokens
+  alias Twitch.Token
   alias Twitch.Client
 
-  def refresh_tokens(%Client{id: client_id, secret: client_secret}, refresh_token) do
+  def refresh_token(%Client{id: client_id, secret: client_secret}, refresh_token) do
     url = "https://id.twitch.tv/oauth2/token"
 
     body =
@@ -17,9 +17,9 @@ defmodule Twitch.Api do
 
     case HTTPoison.post(url, body, headers) do
       {:ok, %HTTPoison.Response{status_code: 200, body: response}} ->
-        case Tokens.from_json(response) do
-          {:ok, tokens} ->
-            {:ok, tokens}
+        case Token.from_json(response) do
+          {:ok, token} ->
+            {:ok, token}
 
           {:error, reason} ->
             {:error, {:token_parse_error, reason}}

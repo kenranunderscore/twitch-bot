@@ -5,7 +5,7 @@ defmodule Twitch.TokenStorage do
 
   require Logger
 
-  def save(%Twitch.Tokens{
+  def save(%Twitch.Token{
         access_token: access_token,
         refresh_token: refresh_token,
         expires_at: expires_at
@@ -13,7 +13,7 @@ defmodule Twitch.TokenStorage do
     with :ok <- File.write(@access_token_file, access_token),
          :ok <- File.write(@expires_at_file, Integer.to_string(expires_at)),
          :ok <- File.write(@refresh_token_file, refresh_token) do
-      Logger.info("Tokens stored")
+      Logger.info("Token stored")
       :ok
     else
       {:error, reason} ->
@@ -27,7 +27,7 @@ defmodule Twitch.TokenStorage do
          {:ok, t} <- File.read(@expires_at_file),
          {expires_at, _} <- Integer.parse(t) do
       {:ok,
-       %Twitch.Tokens{
+       %Twitch.Token{
          access_token: access_token,
          refresh_token: refresh_token,
          expires_at: expires_at

@@ -2,11 +2,11 @@ defmodule Twitch.Auth.Effect do
   use Efx
 
   @spec refresh_token(%Twitch.Client{}, String.t()) ::
-          {:ok, %Twitch.Tokens{}} | {:error, term()}
+          {:ok, %Twitch.Token{}} | {:error, term()}
   defeffect refresh_token(client, refresh_token) do
-    with {:ok, tokens} <- Twitch.Api.refresh_tokens(client, refresh_token),
-         :ok <- Twitch.TokenStorage.save(tokens) do
-      {:ok, tokens}
+    with {:ok, token} <- Twitch.Api.refresh_token(client, refresh_token),
+         :ok <- Twitch.TokenStorage.save(token) do
+      {:ok, token}
     else
       {:error, reason} -> {:error, reason}
     end
