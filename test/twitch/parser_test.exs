@@ -1,7 +1,8 @@
-defmodule IrcTest do
+defmodule Twitch.ParserTest do
   use ExUnit.Case, async: true
 
-  alias Kenran.Parser.PrivMsg
+  alias Twitch.Parser
+  alias Twitch.Parser.PrivMsg
 
   defp chat_message,
     do:
@@ -9,12 +10,12 @@ defmodule IrcTest do
 
   describe "irc chat message" do
     test "message content can be parsed" do
-      cmd = Kenran.Parser.parse_irc_command(chat_message())
+      cmd = Parser.parse_irc_command(chat_message())
       assert cmd.command == %PrivMsg{channel: "#blubchan", message: "hi3 you"}
     end
 
     test "tags can be parsed" do
-      cmd = Kenran.Parser.parse_irc_command(chat_message())
+      cmd = Parser.parse_irc_command(chat_message())
 
       assert cmd.tags == %{
                "badges" => "broadcaster/1,premium/1",
@@ -34,7 +35,7 @@ defmodule IrcTest do
     end
 
     test "source can be parsed" do
-      cmd = Kenran.Parser.parse_irc_command(chat_message())
+      cmd = Parser.parse_irc_command(chat_message())
 
       assert cmd.source == %{
                type: :user,

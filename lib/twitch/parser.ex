@@ -1,4 +1,4 @@
-defmodule Kenran.Parser do
+defmodule Twitch.Parser do
   require Logger
 
   defmodule PrivMsg do
