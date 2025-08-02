@@ -2,8 +2,6 @@ defmodule Twitch.AuthTest do
   use ExUnit.Case, async: true
   use EfxCase
 
-  require Logger
-
   alias Twitch.Auth.Effect
 
   defp old_timestamp do
