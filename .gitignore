@@ -1,4 +1,5 @@
 # Elixir defaults
+.elixir-tools/
 /_build/
 /cover/
 /deps/
